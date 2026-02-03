@@ -1,0 +1,55 @@
+name: 'ListenBrainz Data'
+description: 'Fetch listening data from ListenBrainz and write to JSON'
+branding:
+  icon: 'music'
+  color: 'orange'
+
+inputs:
+  username:
+    description: 'ListenBrainz username'
+    required: true
+  output_path:
+    description: 'Path to write the JSON file'
+    required: false
+    default: 'src/data/music.json'
+  stats_range:
+    description: 'Time range for stats (this_week, this_month, this_year, week, month, quarter, half_yearly, all_time)'
+    required: false
+    default: 'this_month'
+  top_count:
+    description: 'Number of items in top lists'
+    required: false
+    default: '5'
+  recent_count:
+    description: 'Number of recent listens'
+    required: false
+    default: '5'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Fetch recent listens
+      shell: bash
+      run: bash ${{ github.action_path }}/scripts/fetch-listens.sh
+      env:
+        LB_USERNAME: ${{ inputs.username }}
+        LB_RECENT_COUNT: ${{ inputs.recent_count }}
+        LB_TMPDIR: ${{ runner.temp }}/listenbrainz
+
+    - name: Fetch stats
+      shell: bash
+      run: bash ${{ github.action_path }}/scripts/fetch-stats.sh
+      env:
+        LB_USERNAME: ${{ inputs.username }}
+        LB_STATS_RANGE: ${{ inputs.stats_range }}
+        LB_TOP_COUNT: ${{ inputs.top_count }}
+        LB_TMPDIR: ${{ runner.temp }}/listenbrainz
+
+    - name: Build JSON
+      shell: bash
+      run: bash ${{ github.action_path }}/scripts/build-json.sh
+      env:
+        LB_USERNAME: ${{ inputs.username }}
+        LB_STATS_RANGE: ${{ inputs.stats_range }}
+        LB_OUTPUT_PATH: ${{ inputs.output_path }}
+        LB_TMPDIR: ${{ runner.temp }}/listenbrainz
