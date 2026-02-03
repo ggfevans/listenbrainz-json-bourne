@@ -28,6 +28,31 @@ validate_stats_range "$LB_STATS_RANGE"
 validate_positive_integer "top_count" "$LB_TOP_COUNT"
 
 # ---------------------------------------------------------------------------
+# HTTP fetch with retry
+# ---------------------------------------------------------------------------
+fetch_url() {
+  local url="$1" output="$2" retries=2 attempt=0 status
+  while [ $attempt -lt $retries ]; do
+    status=$(curl -sL --max-redirs 3 -w "%{http_code}" -o "$output" \
+      --max-time 30 --connect-timeout 10 "$url") || status="000"
+    if [ "$status" -eq 429 ]; then
+      local wait=$((2 ** attempt))
+      echo "Rate limited (HTTP 429), retrying in ${wait}s..." >&2
+      sleep "$wait"
+      attempt=$((attempt + 1))
+    elif [ "$status" = "000" ] && [ $attempt -eq 0 ]; then
+      echo "Connection failed, retrying in 2s..." >&2
+      sleep 2
+      attempt=$((attempt + 1))
+    else
+      echo "$status"
+      return 0
+    fi
+  done
+  echo "$status"
+}
+
+# ---------------------------------------------------------------------------
 # Create temp directory if it doesn't exist
 # ---------------------------------------------------------------------------
 mkdir -p "$LB_TMPDIR"
@@ -55,9 +80,7 @@ fetch_stat() {
   echo "Fetching ${output_name} for user: ${LB_USERNAME} (range: ${LB_STATS_RANGE}, count: ${LB_TOP_COUNT})"
 
   local http_status
-  http_status=$(curl -s -L --max-redirs 3 -w "%{http_code}" -o "$tmp_file" \
-    --max-time 30 --connect-timeout 10 \
-    "$url") || http_status="000"
+  http_status=$(fetch_url "$url" "$tmp_file")
 
   if [ "$http_status" -eq 200 ]; then
     if jq empty "$tmp_file" 2>/dev/null && \
