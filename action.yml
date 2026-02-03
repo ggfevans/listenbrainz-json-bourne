@@ -34,7 +34,7 @@ runs:
       env:
         LB_USERNAME: ${{ inputs.username }}
         LB_RECENT_COUNT: ${{ inputs.recent_count }}
-        LB_TMPDIR: ${{ runner.temp }}/listenbrainz
+        LB_TMPDIR: ${{ runner.temp }}/listenbrainz-${{ github.run_id }}
 
     - name: Fetch stats
       shell: bash
@@ -43,7 +43,7 @@ runs:
         LB_USERNAME: ${{ inputs.username }}
         LB_STATS_RANGE: ${{ inputs.stats_range }}
         LB_TOP_COUNT: ${{ inputs.top_count }}
-        LB_TMPDIR: ${{ runner.temp }}/listenbrainz
+        LB_TMPDIR: ${{ runner.temp }}/listenbrainz-${{ github.run_id }}
 
     - name: Build JSON
       shell: bash
@@ -52,4 +52,11 @@ runs:
         LB_USERNAME: ${{ inputs.username }}
         LB_STATS_RANGE: ${{ inputs.stats_range }}
         LB_OUTPUT_PATH: ${{ inputs.output_path }}
-        LB_TMPDIR: ${{ runner.temp }}/listenbrainz
+        LB_TMPDIR: ${{ runner.temp }}/listenbrainz-${{ github.run_id }}
+
+    - name: Cleanup
+      if: always()
+      shell: bash
+      run: rm -rf "$LB_TMPDIR"
+      env:
+        LB_TMPDIR: ${{ runner.temp }}/listenbrainz-${{ github.run_id }}

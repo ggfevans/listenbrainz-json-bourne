@@ -34,13 +34,19 @@ mkdir -p "$LB_TMPDIR"
 # ---------------------------------------------------------------------------
 echo "Fetching recent listens for user: ${LB_USERNAME} (count: ${LB_RECENT_COUNT})"
 
-HTTP_STATUS=$(curl -s -w "%{http_code}" -o "$LB_TMPDIR/listens-response.tmp" \
+HTTP_STATUS=$(curl -s -L --max-redirs 3 -w "%{http_code}" -o "$LB_TMPDIR/listens-response.tmp" \
   --max-time 30 --connect-timeout 10 \
   "${API_BASE}/${LB_USERNAME}/listens?count=${LB_RECENT_COUNT}")
 
 if [ "$HTTP_STATUS" -ne 200 ]; then
   echo "Error: ListenBrainz API returned HTTP ${HTTP_STATUS} for listens endpoint" >&2
-  cat "$LB_TMPDIR/listens-response.tmp" 2>/dev/null >&2
+  head -c 500 "$LB_TMPDIR/listens-response.tmp" 2>/dev/null >&2
+  rm -f "$LB_TMPDIR/listens-response.tmp"
+  exit 1
+fi
+
+if ! jq empty "$LB_TMPDIR/listens-response.tmp" 2>/dev/null; then
+  echo "Error: ListenBrainz API returned invalid JSON for listens endpoint" >&2
   rm -f "$LB_TMPDIR/listens-response.tmp"
   exit 1
 fi
@@ -69,7 +75,7 @@ echo "Wrote ${LISTEN_COUNT} listens to ${LB_TMPDIR}/listens.json"
 # ---------------------------------------------------------------------------
 echo "Fetching total listen count for user: ${LB_USERNAME}"
 
-COUNT_STATUS=$(curl -s -w "%{http_code}" -o "$LB_TMPDIR/count-response.tmp" \
+COUNT_STATUS=$(curl -s -L --max-redirs 3 -w "%{http_code}" -o "$LB_TMPDIR/count-response.tmp" \
   --max-time 30 --connect-timeout 10 \
   "${API_BASE}/${LB_USERNAME}/listen-count")
 
