@@ -55,17 +55,24 @@ fetch_stat() {
   echo "Fetching ${output_name} for user: ${LB_USERNAME} (range: ${LB_STATS_RANGE}, count: ${LB_TOP_COUNT})"
 
   local http_status
-  http_status=$(curl -s -w "%{http_code}" -o "$tmp_file" \
+  http_status=$(curl -s -L --max-redirs 3 -w "%{http_code}" -o "$tmp_file" \
     --max-time 30 --connect-timeout 10 \
     "$url") || http_status="000"
 
   if [ "$http_status" -eq 200 ]; then
-    jq "[.payload.${array_key}[] | ${jq_filter}]" "$tmp_file" > "$LB_TMPDIR/${output_name}.json"
-    echo "ok" > "$LB_TMPDIR/${output_name}-status.txt"
-    jq ".payload.${total_key}" "$tmp_file" > "$LB_TMPDIR/${output_name}-total.txt"
-    local count
-    count=$(jq length "$LB_TMPDIR/${output_name}.json")
-    echo "Wrote ${count} ${output_name} to ${LB_TMPDIR}/${output_name}.json"
+    if jq empty "$tmp_file" 2>/dev/null && \
+       jq "[.payload.${array_key}[] | ${jq_filter}]" "$tmp_file" > "$LB_TMPDIR/${output_name}.json" 2>/dev/null; then
+      echo "ok" > "$LB_TMPDIR/${output_name}-status.txt"
+      jq ".payload.${total_key}" "$tmp_file" > "$LB_TMPDIR/${output_name}-total.txt" 2>/dev/null || echo "null" > "$LB_TMPDIR/${output_name}-total.txt"
+      local count
+      count=$(jq length "$LB_TMPDIR/${output_name}.json")
+      echo "Wrote ${count} ${output_name} to ${LB_TMPDIR}/${output_name}.json"
+    else
+      echo "[]" > "$LB_TMPDIR/${output_name}.json"
+      echo "error" > "$LB_TMPDIR/${output_name}-status.txt"
+      echo "null" > "$LB_TMPDIR/${output_name}-total.txt"
+      echo "Warning: Failed to parse ${output_name} response as expected JSON" >&2
+    fi
   elif [ "$http_status" -eq 204 ]; then
     echo "[]" > "$LB_TMPDIR/${output_name}.json"
     echo "no_data" > "$LB_TMPDIR/${output_name}-status.txt"
@@ -86,14 +93,14 @@ fetch_stat() {
 # ---------------------------------------------------------------------------
 fetch_stat "artists" "artists" \
   '{name: .artist_name, listenCount: .listen_count, artistMbid: (.artist_mbid // null)}' \
-  "artists" "total_artist_count" || true
+  "artists" "total_artist_count"
 
 fetch_stat "recordings" "recordings" \
   '{track: .track_name, artist: .artist_name, listenCount: .listen_count, recordingMbid: (.recording_mbid // null), caaReleaseMbid: (.caa_release_mbid // null), caaId: (.caa_id // null)}' \
-  "recordings" "total_recording_count" || true
+  "recordings" "total_recording_count"
 
 fetch_stat "releases" "releases" \
   '{album: .release_name, artist: .artist_name, listenCount: .listen_count, caaReleaseMbid: (.caa_release_mbid // null), caaId: (.caa_id // null)}' \
-  "releases" "total_release_count" || true
+  "releases" "total_release_count"
 
 echo "fetch-stats.sh completed successfully"
