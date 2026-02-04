@@ -21,33 +21,10 @@ API_BASE="https://api.listenbrainz.org/1/user"
 
 # shellcheck source=validate-inputs.sh
 source "$(dirname "$0")/validate-inputs.sh"
+# shellcheck source=http.sh
+source "$(dirname "$0")/http.sh"
 validate_username "$LB_USERNAME"
 validate_positive_integer "recent_count" "$LB_RECENT_COUNT"
-
-# ---------------------------------------------------------------------------
-# HTTP fetch with retry
-# ---------------------------------------------------------------------------
-fetch_url() {
-  local url="$1" output="$2" retries=2 attempt=0 status
-  while [ $attempt -lt $retries ]; do
-    status=$(curl -sL --max-redirs 3 -w "%{http_code}" -o "$output" \
-      --max-time 30 --connect-timeout 10 "$url") || status="000"
-    if [ "$status" -eq 429 ]; then
-      local wait=$((2 ** attempt))
-      echo "Rate limited (HTTP 429), retrying in ${wait}s..." >&2
-      sleep "$wait"
-      attempt=$((attempt + 1))
-    elif [ "$status" = "000" ] && [ $attempt -eq 0 ]; then
-      echo "Connection failed, retrying in 2s..." >&2
-      sleep 2
-      attempt=$((attempt + 1))
-    else
-      echo "$status"
-      return 0
-    fi
-  done
-  echo "$status"
-}
 
 # ---------------------------------------------------------------------------
 # 1. Create temp directory if it doesn't exist
@@ -63,7 +40,7 @@ HTTP_STATUS=$(fetch_url "${API_BASE}/${LB_USERNAME}/listens?count=${LB_RECENT_CO
 
 if [ "$HTTP_STATUS" -ne 200 ]; then
   echo "Error: ListenBrainz API returned HTTP ${HTTP_STATUS} for listens endpoint" >&2
-  head -c 500 "$LB_TMPDIR/listens-response.tmp" 2>/dev/null >&2
+  echo "::warning::ListenBrainz API error response (first 500 bytes): $(head -c 500 "$LB_TMPDIR/listens-response.tmp" 2>/dev/null)"
   rm -f "$LB_TMPDIR/listens-response.tmp"
   exit 1
 fi

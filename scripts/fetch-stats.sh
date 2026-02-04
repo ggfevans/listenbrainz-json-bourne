@@ -23,34 +23,11 @@ API_BASE="https://api.listenbrainz.org/1/stats/user"
 
 # shellcheck source=validate-inputs.sh
 source "$(dirname "$0")/validate-inputs.sh"
+# shellcheck source=http.sh
+source "$(dirname "$0")/http.sh"
 validate_username "$LB_USERNAME"
 validate_stats_range "$LB_STATS_RANGE"
 validate_positive_integer "top_count" "$LB_TOP_COUNT"
-
-# ---------------------------------------------------------------------------
-# HTTP fetch with retry
-# ---------------------------------------------------------------------------
-fetch_url() {
-  local url="$1" output="$2" retries=2 attempt=0 status
-  while [ $attempt -lt $retries ]; do
-    status=$(curl -sL --max-redirs 3 -w "%{http_code}" -o "$output" \
-      --max-time 30 --connect-timeout 10 "$url") || status="000"
-    if [ "$status" -eq 429 ]; then
-      local wait=$((2 ** attempt))
-      echo "Rate limited (HTTP 429), retrying in ${wait}s..." >&2
-      sleep "$wait"
-      attempt=$((attempt + 1))
-    elif [ "$status" = "000" ] && [ $attempt -eq 0 ]; then
-      echo "Connection failed, retrying in 2s..." >&2
-      sleep 2
-      attempt=$((attempt + 1))
-    else
-      echo "$status"
-      return 0
-    fi
-  done
-  echo "$status"
-}
 
 # ---------------------------------------------------------------------------
 # Create temp directory if it doesn't exist
