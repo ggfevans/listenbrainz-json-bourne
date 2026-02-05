@@ -39,7 +39,7 @@ jobs:
           set -euo pipefail
 
           TAG_NAME="${{ github.event.release.tag_name }}"
-          MAJOR=$(echo "${TAG_NAME}" | grep -oE '^v[0-9]+')
+          MAJOR=$(echo "${TAG_NAME}" | grep -oE '^v[0-9]+' || true)
 
           if [ -z "${MAJOR}" ]; then
             echo "Could not extract major version from ${TAG_NAME}, skipping"
@@ -88,7 +88,7 @@ jobs:
           set -euo pipefail
 
           TAG_NAME="${{ github.event.release.tag_name }}"
-          MAJOR=$(echo "${TAG_NAME}" | grep -oE '^v[0-9]+')
+          MAJOR=$(echo "${TAG_NAME}" | grep -oE '^v[0-9]+' || true)
 
           if [ -z "${MAJOR}" ]; then
             echo "::warning::Could not extract major version from ${TAG_NAME}"
