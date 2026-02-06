@@ -1,0 +1,100 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  update-refs:
+    runs-on: ubuntu-latest
+    if: "!github.event.release.prerelease"
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          ref: main
+
+      - name: Update self-reference SHA in README
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          RELEASE_SHA="${{ github.sha }}"
+
+          echo "Updating README: self-reference → ${RELEASE_SHA} # ${TAG_NAME}"
+
+          sed -i "s|ggfevans/listenbrainz-github-action@[a-f0-9]\{40\} # [^ ]*|ggfevans/listenbrainz-github-action@${RELEASE_SHA} # ${TAG_NAME}|g" README.md
+
+          if ! grep -q "ggfevans/listenbrainz-github-action@${RELEASE_SHA}" README.md; then
+            echo "::error::Failed to update self-reference in README.md"
+            exit 1
+          fi
+
+      - name: Update SECURITY.md supported versions
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          MAJOR=$(echo "${TAG_NAME}" | grep -oE '^v[0-9]+' || true)
+
+          if [ -z "${MAJOR}" ]; then
+            echo "Could not extract major version from ${TAG_NAME}, skipping"
+            exit 0
+          fi
+
+          # Check if this major version is already in the table
+          if grep -qE "\| *${MAJOR}\.x" SECURITY.md; then
+            echo "${MAJOR}.x already in SECURITY.md, no update needed"
+            exit 0
+          fi
+
+          # Add new major version row after the table header separator
+          sed -i "/^| *-\+ *| *-\+ *|$/a | ${MAJOR}.x    | Yes       |" SECURITY.md
+
+          # Verify the row was actually inserted
+          if ! grep -qE "\| *${MAJOR}\.x" SECURITY.md; then
+            echo "::error::Failed to add ${MAJOR}.x to SECURITY.md supported versions"
+            exit 1
+          fi
+
+          echo "Added ${MAJOR}.x to SECURITY.md supported versions"
+
+      - name: Commit and push
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add README.md SECURITY.md
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          git commit -m "docs: update references for ${TAG_NAME}"
+          git push origin main
+
+      - name: Update major version tag
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          MAJOR=$(echo "${TAG_NAME}" | grep -oE '^v[0-9]+' || true)
+
+          if [ -z "${MAJOR}" ]; then
+            echo "::warning::Could not extract major version from ${TAG_NAME}"
+            exit 0
+          fi
+
+          echo "Moving ${MAJOR} tag to HEAD (includes docs update)"
+          git tag -fa "${MAJOR}" -m "${MAJOR} - latest ${MAJOR}.x release" HEAD
+          git push origin "${MAJOR}" --force

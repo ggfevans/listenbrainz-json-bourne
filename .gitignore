@@ -4,3 +4,6 @@
 
 # Design docs and plans
 /docs/
+
+# Worktrees
+/.worktrees/

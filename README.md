@@ -26,14 +26,14 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: ggfevans/listenbrainz-github-action@v1
+      - uses: ggfevans/listenbrainz-github-action@a39e89ecc366d5f8bc90e8d56cdc3d9e6a2237a9 # v1.0.0
         with:
           username: your-listenbrainz-username
 
       - name: Commit and push
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5.2.0
         with:
           commit_message: 'chore: update listenbrainz data'
           file_pattern: src/data/music.json
