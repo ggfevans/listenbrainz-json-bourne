@@ -35,6 +35,8 @@ jobs:
 
 The action fetches data from ListenBrainz, writes a JSON file, and automatically commits and pushes if the file changed. No separate commit action needed. If the data hasn't changed since the last run, no commit is created.
 
+A full example workflow with all options documented is available at [`example.yml`](example.yml).
+
 ## Inputs
 
 | Name | Required | Default | Description |
@@ -113,6 +115,66 @@ MusicBrainz IDs and Cover Art Archive IDs are passed through so your frontend ca
 ```
 https://coverartarchive.org/release/{caaReleaseMbid}/front-250
 ```
+
+<details>
+<summary>Example output (trimmed to 1 item per section)</summary>
+
+```json
+{
+  "lastUpdated": "2026-02-06T00:00:00Z",
+  "recentListens": [
+    {
+      "track": "Airbag",
+      "artist": "Radiohead",
+      "album": "OK Computer",
+      "listenedAt": "2026-02-05T23:14:00Z",
+      "caaReleaseMbid": "a1289d02-1f5b-3b1b-854b-7bf3cd0e4a5c",
+      "caaId": 12345,
+      "recordingMbid": "b3015bab-1540-4d4b-9b1a-2e4a0773e491",
+      "artistMbids": ["a74b1b7f-71a5-4011-9441-d0b5e4122711"]
+    }
+  ],
+  "recentListensStatus": "ok",
+  "topArtists": [
+    {
+      "name": "Radiohead",
+      "listenCount": 142,
+      "artistMbid": "a74b1b7f-71a5-4011-9441-d0b5e4122711"
+    }
+  ],
+  "topArtistsStatus": "ok",
+  "topTracks": [
+    {
+      "track": "Everything In Its Right Place",
+      "artist": "Radiohead",
+      "listenCount": 12,
+      "recordingMbid": "b3015bab-1540-4d4b-9b1a-2e4a0773e491",
+      "caaReleaseMbid": "a1289d02-1f5b-3b1b-854b-7bf3cd0e4a5c",
+      "caaId": 12345
+    }
+  ],
+  "topTracksStatus": "ok",
+  "topAlbums": [
+    {
+      "album": "Kid A",
+      "artist": "Radiohead",
+      "listenCount": 38,
+      "caaReleaseMbid": "0b6b4ba0-d36f-3532-87a0-c428aaf6da63",
+      "caaId": 67890
+    }
+  ],
+  "topAlbumsStatus": "ok",
+  "stats": {
+    "totalListenCount": 48319,
+    "range": "this_month",
+    "artistCount": 85,
+    "albumCount": 142,
+    "trackCount": 310
+  }
+}
+```
+
+</details>
 
 ## AI Disclosure
 
