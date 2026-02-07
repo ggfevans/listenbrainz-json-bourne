@@ -52,7 +52,7 @@ The action fetches data from ListenBrainz, writes a JSON file, and automatically
 | Name | Description |
 |------|-------------|
 | `changes_detected` | `true` if the output file changed, `false` otherwise |
-| `file_path` | Resolved absolute path to the output file |
+| `file_path` | Repository-relative path to the output file |
 
 Use outputs for conditional downstream steps:
 

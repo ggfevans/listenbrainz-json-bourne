@@ -38,7 +38,7 @@ outputs:
     description: 'Whether the output file changed (true/false)'
     value: ${{ steps.commit.outputs.changes_detected }}
   file_path:
-    description: 'Resolved path to the output file'
+    description: 'Repository-relative path to the output file'
     value: ${{ steps.commit.outputs.file_path }}
 
 runs:
@@ -72,7 +72,6 @@ runs:
 
     - name: Commit changes
       id: commit
-      if: success()
       shell: bash
       run: bash ${{ github.action_path }}/scripts/commit-changes.sh
       env:

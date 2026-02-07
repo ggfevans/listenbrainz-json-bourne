@@ -25,17 +25,30 @@ validate_stats_range() {
   esac
 }
 
+resolve_path() {
+  local resolved
+  if resolved="$(realpath -m "$1" 2>/dev/null)"; then
+    echo "$resolved"
+  elif resolved="$(python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "$1" 2>/dev/null)"; then
+    echo "$resolved"
+  else
+    local dir
+    dir="$(dirname "$1")"
+    if [ -d "$dir" ]; then
+      echo "$(cd "$dir" && pwd)/$(basename "$1")"
+    else
+      # Return absolute path even in fallback to ensure consistent validation
+      case "$1" in
+        /*) echo "$1" ;;
+        *)  echo "${PWD}/$1" ;;
+      esac
+    fi
+  fi
+}
+
 validate_output_path() {
   local resolved
-  # realpath -m works on GNU/Linux (GitHub Actions runners) but not macOS.
-  # Fall back to python3 or plain realpath when -m is unavailable.
-  if resolved="$(realpath -m "$1" 2>/dev/null)"; then
-    :
-  elif resolved="$(python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "$1" 2>/dev/null)"; then
-    :
-  else
-    resolved="$(cd "$(dirname "$1")" 2>/dev/null && pwd)/$(basename "$1")"
-  fi
+  resolved="$(resolve_path "$1")"
   if [ -n "${GITHUB_WORKSPACE:-}" ]; then
     if [[ "$resolved" != "${GITHUB_WORKSPACE}"/* ]]; then
       echo "Error: output_path must be within the workspace (${GITHUB_WORKSPACE}), got '${resolved}'" >&2

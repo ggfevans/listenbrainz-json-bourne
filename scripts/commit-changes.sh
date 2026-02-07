@@ -25,26 +25,18 @@ source "$(dirname "$0")/validate-inputs.sh"
 validate_output_path "$LB_OUTPUT_PATH"
 
 # ---------------------------------------------------------------------------
-# Resolve absolute path for the output
+# Resolve absolute path for the output (resolve_path from validate-inputs.sh)
 # ---------------------------------------------------------------------------
-resolve_path() {
-  if resolved="$(realpath -m "$1" 2>/dev/null)"; then
-    echo "$resolved"
-  elif resolved="$(python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "$1" 2>/dev/null)"; then
-    echo "$resolved"
-  else
-    local dir
-    dir="$(dirname "$1")"
-    if [ -d "$dir" ]; then
-      echo "$(cd "$dir" && pwd)/$(basename "$1")"
-    else
-      echo "$1"
-    fi
-  fi
-}
-
 RESOLVED_PATH="$(resolve_path "$LB_OUTPUT_PATH")"
-echo "file_path=${RESOLVED_PATH}" >> "$GITHUB_OUTPUT"
+
+# Compute repo-relative path for output
+if [ -n "${GITHUB_WORKSPACE:-}" ]; then
+  RELATIVE_PATH="${RESOLVED_PATH#"${GITHUB_WORKSPACE}/"}"
+else
+  RELATIVE_PATH="$LB_OUTPUT_PATH"
+fi
+
+echo "file_path=${RELATIVE_PATH}" >> "$GITHUB_OUTPUT"
 
 # ---------------------------------------------------------------------------
 # Change detection
@@ -62,9 +54,13 @@ if ! git ls-files --error-unmatch "$RESOLVED_PATH" > /dev/null 2>&1; then
   CHANGES_DETECTED="true"
   echo "New file detected: ${RESOLVED_PATH}"
 elif ! git diff --quiet "$RESOLVED_PATH"; then
-  # File is tracked and has modifications
+  # File is tracked and has unstaged modifications
   CHANGES_DETECTED="true"
   echo "File modified: ${RESOLVED_PATH}"
+elif ! git diff --cached --quiet "$RESOLVED_PATH"; then
+  # File is tracked and has staged changes
+  CHANGES_DETECTED="true"
+  echo "File staged: ${RESOLVED_PATH}"
 else
   echo "No changes detected in ${RESOLVED_PATH}"
 fi
@@ -74,7 +70,7 @@ echo "changes_detected=${CHANGES_DETECTED}" >> "$GITHUB_OUTPUT"
 # ---------------------------------------------------------------------------
 # Early exit if skip_commit is true or no changes
 # ---------------------------------------------------------------------------
-if [ "$LB_SKIP_COMMIT" = "true" ]; then
+if [[ "${LB_SKIP_COMMIT,,}" == "true" ]]; then
   echo "skip_commit is true, skipping commit and push"
   exit 0
 fi
