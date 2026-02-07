@@ -1,0 +1,55 @@
+# Example workflow for ggfevans/listenbrainz-github-action
+#
+# Copy this file to .github/workflows/update-music-data.yml in your repository,
+# replace "your-listenbrainz-username" with your actual username, and adjust
+# the options to suit your site.
+#
+# No API key needed -- ListenBrainz stats are public.
+
+name: Update Music Data
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'  # every 6 hours
+  workflow_dispatch:        # manual trigger from Actions tab
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    # The action commits and pushes changes, so it needs write access.
+    # Scope permissions to the minimum required.
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ggfevans/listenbrainz-github-action@v1
+        id: listenbrainz
+        with:
+          username: your-listenbrainz-username
+
+          # Where to write the JSON file (default: src/data/music.json)
+          # output_path: src/data/music.json
+
+          # Time range for top artists/tracks/albums
+          # Options: this_week, this_month, this_year, week, month, quarter, half_yearly, all_time
+          # stats_range: this_month
+
+          # Number of items in top lists and recent listens
+          # top_count: '5'
+          # recent_count: '5'
+
+          # Custom commit message
+          # commit_message: 'chore: update listenbrainz data'
+
+          # Set to 'true' to skip auto-commit and handle it yourself
+          # skip_commit: 'false'
+
+      # Optional: trigger a deploy only when the data actually changed
+      # - name: Trigger deploy
+      #   if: steps.listenbrainz.outputs.changes_detected == 'true'
+      #   env:
+      #     DEPLOY_URL: ${{ secrets.DEPLOY_HOOK_URL }}
+      #   run: curl -X POST "$DEPLOY_URL"
