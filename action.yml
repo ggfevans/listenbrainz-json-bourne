@@ -1,8 +1,8 @@
-name: 'ListenBrainz Data'
+name: 'ListenBrainz listening data to JSON'
 description: 'Fetch listening data from ListenBrainz and write to JSON'
 branding:
   icon: 'music'
-  color: 'orange'
+  color: 'purple'
 
 inputs:
   username:
