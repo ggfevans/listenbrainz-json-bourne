@@ -20,7 +20,7 @@ set -euo pipefail
 : "${LB_SKIP_COMMIT:?must be set}"
 : "${GITHUB_OUTPUT:?must be set}"
 
-# shellcheck source=validate-inputs.sh
+# shellcheck source=scripts/validate-inputs.sh
 source "$(dirname "$0")/validate-inputs.sh"
 validate_output_path "$LB_OUTPUT_PATH"
 
@@ -49,20 +49,20 @@ if [ ! -f "$RESOLVED_PATH" ]; then
   exit 0
 fi
 
-if ! git ls-files --error-unmatch "$RESOLVED_PATH" > /dev/null 2>&1; then
+if ! git ls-files --error-unmatch -- "$RELATIVE_PATH" > /dev/null 2>&1; then
   # File is untracked (first run)
   CHANGES_DETECTED="true"
-  echo "New file detected: ${RESOLVED_PATH}"
-elif ! git diff --quiet "$RESOLVED_PATH"; then
+  echo "New file detected: ${RELATIVE_PATH}"
+elif ! git diff --quiet -- "$RELATIVE_PATH"; then
   # File is tracked and has unstaged modifications
   CHANGES_DETECTED="true"
-  echo "File modified: ${RESOLVED_PATH}"
-elif ! git diff --cached --quiet "$RESOLVED_PATH"; then
+  echo "File modified: ${RELATIVE_PATH}"
+elif ! git diff --cached --quiet -- "$RELATIVE_PATH"; then
   # File is tracked and has staged changes
   CHANGES_DETECTED="true"
-  echo "File staged: ${RESOLVED_PATH}"
+  echo "File staged: ${RELATIVE_PATH}"
 else
-  echo "No changes detected in ${RESOLVED_PATH}"
+  echo "No changes detected in ${RELATIVE_PATH}"
 fi
 
 echo "changes_detected=${CHANGES_DETECTED}" >> "$GITHUB_OUTPUT"
@@ -86,7 +86,7 @@ fi
 git config user.name "github-actions[bot]"
 git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-git add "$RESOLVED_PATH"
+git add -- "$RELATIVE_PATH"
 
 if ! git commit -m "$LB_COMMIT_MESSAGE"; then
   echo "::error::Failed to commit changes. The file may already be committed or there may be a git configuration issue." >&2
