@@ -23,9 +23,9 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: ggfevans/listenbrainz-github-action@v1
+      - uses: ggfevans/listenbrainz-github-action@1f42fd0947e01ed18c04808e7c83337525130ffb # v1
         id: listenbrainz
         with:
           username: your-listenbrainz-username

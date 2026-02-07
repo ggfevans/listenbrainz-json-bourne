@@ -16,7 +16,7 @@ jobs:
         with:
           ref: main
 
-      - name: Update self-reference SHA in README
+      - name: Update self-reference SHAs in docs
         shell: bash
         run: |
           set -euo pipefail
@@ -24,12 +24,18 @@ jobs:
           TAG_NAME="${{ github.event.release.tag_name }}"
           RELEASE_SHA="${{ github.sha }}"
 
-          echo "Updating README: self-reference → ${RELEASE_SHA} # ${TAG_NAME}"
+          echo "Updating docs: self-references → ${RELEASE_SHA} # ${TAG_NAME}"
 
           sed -i "s|ggfevans/listenbrainz-github-action@[a-f0-9]\{40\} # [^ ]*|ggfevans/listenbrainz-github-action@${RELEASE_SHA} # ${TAG_NAME}|g" README.md
+          sed -i "s|ggfevans/listenbrainz-github-action@[a-f0-9]\{40\} # [^ ]*|ggfevans/listenbrainz-github-action@${RELEASE_SHA} # ${TAG_NAME}|g" example.yml
 
           if ! grep -q "ggfevans/listenbrainz-github-action@${RELEASE_SHA}" README.md; then
             echo "::error::Failed to update self-reference in README.md"
+            exit 1
+          fi
+
+          if ! grep -q "ggfevans/listenbrainz-github-action@${RELEASE_SHA}" example.yml; then
+            echo "::error::Failed to update self-reference in example.yml"
             exit 1
           fi
 
@@ -71,7 +77,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add README.md SECURITY.md
+          git add README.md SECURITY.md example.yml
 
           if git diff --cached --quiet; then
             echo "No changes to commit"

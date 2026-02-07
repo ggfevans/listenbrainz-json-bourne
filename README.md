@@ -10,7 +10,9 @@ No authentication is required -- ListenBrainz stats are public.
 
 ## Installation
 
-Add a workflow file to your repository (e.g. `.github/workflows/update-music-data.yml`):
+Copy [`example.yml`](example.yml) to `.github/workflows/update-music-data.yml` in your repository and replace `your-listenbrainz-username` with your ListenBrainz username. That file documents every available option.
+
+Or use this minimal snippet:
 
 ```yaml
 name: Update Music Data
@@ -28,14 +30,12 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: ggfevans/listenbrainz-github-action@a39e89ecc366d5f8bc90e8d56cdc3d9e6a2237a9 # v1.0.0
+      - uses: ggfevans/listenbrainz-github-action@1f42fd0947e01ed18c04808e7c83337525130ffb # v1
         with:
           username: your-listenbrainz-username
 ```
 
 The action fetches data from ListenBrainz, writes a JSON file, and automatically commits and pushes if the file changed. No separate commit action needed. If the data hasn't changed since the last run, no commit is created.
-
-A full example workflow with all options documented is available at [`example.yml`](example.yml).
 
 ## Inputs
 
@@ -59,7 +59,7 @@ A full example workflow with all options documented is available at [`example.ym
 Use outputs for conditional downstream steps:
 
 ```yaml
-- uses: ggfevans/listenbrainz-github-action@a39e89ecc366d5f8bc90e8d56cdc3d9e6a2237a9 # v1.0.0
+- uses: ggfevans/listenbrainz-github-action@1f42fd0947e01ed18c04808e7c83337525130ffb # v1
   id: listenbrainz
   with:
     username: your-listenbrainz-username
@@ -77,7 +77,7 @@ If you prefer to handle commits yourself (e.g. to combine with other file change
 steps:
   - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-  - uses: ggfevans/listenbrainz-github-action@a39e89ecc366d5f8bc90e8d56cdc3d9e6a2237a9 # v1.0.0
+  - uses: ggfevans/listenbrainz-github-action@1f42fd0947e01ed18c04808e7c83337525130ffb # v1
     id: listenbrainz
     with:
       username: your-listenbrainz-username
