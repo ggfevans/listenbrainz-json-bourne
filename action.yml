@@ -24,6 +24,22 @@ inputs:
     description: 'Number of recent listens'
     required: false
     default: '5'
+  commit_message:
+    description: 'Git commit message for auto-commit'
+    required: false
+    default: 'chore: update listenbrainz data'
+  skip_commit:
+    description: 'Skip auto-commit (set to true to handle commits yourself)'
+    required: false
+    default: 'false'
+
+outputs:
+  changes_detected:
+    description: 'Whether the output file changed (true/false)'
+    value: ${{ steps.commit.outputs.changes_detected }}
+  file_path:
+    description: 'Repository-relative path to the output file'
+    value: ${{ steps.commit.outputs.file_path }}
 
 runs:
   using: 'composite'
@@ -53,6 +69,15 @@ runs:
         LB_STATS_RANGE: ${{ inputs.stats_range }}
         LB_OUTPUT_PATH: ${{ inputs.output_path }}
         LB_TMPDIR: ${{ runner.temp }}/listenbrainz-${{ github.run_id }}
+
+    - name: Commit changes
+      id: commit
+      shell: bash
+      run: bash ${{ github.action_path }}/scripts/commit-changes.sh
+      env:
+        LB_OUTPUT_PATH: ${{ inputs.output_path }}
+        LB_COMMIT_MESSAGE: ${{ inputs.commit_message }}
+        LB_SKIP_COMMIT: ${{ inputs.skip_commit }}
 
     - name: Cleanup
       if: always()

@@ -19,9 +19,9 @@ API_BASE="https://api.listenbrainz.org/1/user"
 : "${LB_RECENT_COUNT:?must be set}"
 : "${LB_TMPDIR:?must be set}"
 
-# shellcheck source=validate-inputs.sh
+# shellcheck source=scripts/validate-inputs.sh
 source "$(dirname "$0")/validate-inputs.sh"
-# shellcheck source=http.sh
+# shellcheck source=scripts/http.sh
 source "$(dirname "$0")/http.sh"
 validate_username "$LB_USERNAME"
 validate_positive_integer "recent_count" "$LB_RECENT_COUNT"

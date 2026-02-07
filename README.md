@@ -4,7 +4,7 @@ A composite GitHub Action that fetches listening data from the [ListenBrainz](ht
 
 ## What it does
 
-This action hits the ListenBrainz API to pull down your recent listens, top artists, top tracks, and top albums, then writes everything to a single JSON file in your repository. When paired with a commit step and a static site generator like Astro, this gives you a "live" music data page that updates on a schedule without any server-side runtime.
+This action hits the ListenBrainz API to pull down your recent listens, top artists, top tracks, and top albums, then writes everything to a single JSON file in your repository and commits the changes. When paired with a static site generator like Astro, this gives you a "live" music data page that updates on a schedule without any server-side runtime.
 
 No authentication is required -- ListenBrainz stats are public.
 
@@ -31,15 +31,9 @@ jobs:
       - uses: ggfevans/listenbrainz-github-action@a39e89ecc366d5f8bc90e8d56cdc3d9e6a2237a9 # v1.0.0
         with:
           username: your-listenbrainz-username
-
-      - name: Commit and push
-        uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5.2.0
-        with:
-          commit_message: 'chore: update listenbrainz data'
-          file_pattern: src/data/music.json
 ```
 
-The action writes the JSON file. Committing and pushing is handled separately -- the example above uses [git-auto-commit-action](https://github.com/stefanzweifel/git-auto-commit-action), but you can use whatever commit strategy you prefer.
+The action fetches data from ListenBrainz, writes a JSON file, and automatically commits and pushes if the file changed. No separate commit action needed. If the data hasn't changed since the last run, no commit is created.
 
 ## Inputs
 
@@ -50,6 +44,50 @@ The action writes the JSON file. Committing and pushing is handled separately --
 | `stats_range` | No | `this_month` | Time range for stats (`this_week`, `this_month`, `this_year`, `week`, `month`, `quarter`, `half_yearly`, `all_time`) |
 | `top_count` | No | `5` | Number of items in top artists/tracks/albums lists |
 | `recent_count` | No | `5` | Number of recent listens to include |
+| `commit_message` | No | `chore: update listenbrainz data` | Git commit message for auto-commit |
+| `skip_commit` | No | `false` | Skip auto-commit (set to `true` to handle commits yourself) |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| `changes_detected` | `true` if the output file changed, `false` otherwise |
+| `file_path` | Repository-relative path to the output file |
+
+Use outputs for conditional downstream steps:
+
+```yaml
+- uses: ggfevans/listenbrainz-github-action@a39e89ecc366d5f8bc90e8d56cdc3d9e6a2237a9 # v1.0.0
+  id: listenbrainz
+  with:
+    username: your-listenbrainz-username
+
+- name: Deploy
+  if: steps.listenbrainz.outputs.changes_detected == 'true'
+  run: echo "Data changed, triggering deploy..."
+```
+
+## Advanced: Manual Commits
+
+If you prefer to handle commits yourself (e.g. to combine with other file changes), set `skip_commit: true`:
+
+```yaml
+steps:
+  - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+  - uses: ggfevans/listenbrainz-github-action@a39e89ecc366d5f8bc90e8d56cdc3d9e6a2237a9 # v1.0.0
+    id: listenbrainz
+    with:
+      username: your-listenbrainz-username
+      skip_commit: true
+
+  - name: Commit and push
+    if: steps.listenbrainz.outputs.changes_detected == 'true'
+    uses: stefanzweifel/git-auto-commit-action@b863ae1933cb653a53c021fe36dbb774e1fb9403 # v5.2.0
+    with:
+      commit_message: 'chore: update listenbrainz data'
+      file_pattern: ${{ steps.listenbrainz.outputs.file_path }}
+```
 
 ## Output JSON
 

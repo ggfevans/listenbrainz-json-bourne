@@ -15,6 +15,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Run action
+        id: test_run
         uses: ./
         with:
           username: rob
@@ -22,6 +23,7 @@ jobs:
           stats_range: this_month
           top_count: '3'
           recent_count: '3'
+          skip_commit: 'true'
 
       - name: Validate output exists
         shell: bash
@@ -38,6 +40,18 @@ jobs:
           jq -e '.topAlbumsStatus' test-output/music.json
           jq -e '.stats.range == "this_month"' test-output/music.json
           jq -e '.lastUpdated' test-output/music.json
+
+      - name: Validate action outputs
+        shell: bash
+        env:
+          CHANGES_DETECTED: ${{ steps.test_run.outputs.changes_detected }}
+          FILE_PATH: ${{ steps.test_run.outputs.file_path }}
+        run: |
+          echo "changes_detected: ${CHANGES_DETECTED}"
+          echo "file_path: ${FILE_PATH}"
+          test -n "${CHANGES_DETECTED}" || { echo "changes_detected output not set" >&2; exit 1; }
+          test -n "${FILE_PATH}" || { echo "file_path output not set" >&2; exit 1; }
+          [[ "${FILE_PATH}" == *"music.json"* ]] || { echo "file_path doesn't contain expected filename" >&2; exit 1; }
 
       - name: Print output for debugging
         if: always()
