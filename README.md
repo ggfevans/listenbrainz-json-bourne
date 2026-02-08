@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: ggfevans/listenbrainz-github-action@d7014fadff31efeb9a711cc0179509ffef94a4aa # v1.1.2
+      - uses: ggfevans/listenbrainz-github-action@241017756e07940b69321aa1c4225b3d7fefbbde # v1.1.3
         with:
           username: your-listenbrainz-username
 ```
@@ -59,7 +59,7 @@ The action fetches data from ListenBrainz, writes a JSON file, and automatically
 Use outputs for conditional downstream steps:
 
 ```yaml
-- uses: ggfevans/listenbrainz-github-action@d7014fadff31efeb9a711cc0179509ffef94a4aa # v1.1.2
+- uses: ggfevans/listenbrainz-github-action@241017756e07940b69321aa1c4225b3d7fefbbde # v1.1.3
   id: listenbrainz
   with:
     username: your-listenbrainz-username
@@ -77,7 +77,7 @@ If you prefer to handle commits yourself (e.g. to combine with other file change
 steps:
   - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-  - uses: ggfevans/listenbrainz-github-action@d7014fadff31efeb9a711cc0179509ffef94a4aa # v1.1.2
+  - uses: ggfevans/listenbrainz-github-action@241017756e07940b69321aa1c4225b3d7fefbbde # v1.1.3
     id: listenbrainz
     with:
       username: your-listenbrainz-username

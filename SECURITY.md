@@ -1,12 +1,4 @@
-# Security Policy
-
-## Supported Versions
-
-listenbrainz-github-action is currently in active development. Security updates are applied to the latest version.
-
-| Version | Supported |
-| ------- | --------- |
-| v1.1.2  | :white_check_mark:       |
+| v1.1.3  | Yes       |
 | <v1.1.2 | :x:       |
 
 Only the latest release is actively supported with security fixes.
