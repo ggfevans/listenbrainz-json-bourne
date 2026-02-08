@@ -1,118 +1,52 @@
 {
-  "lastUpdated": "2026-02-08T03:30:57Z",
+  "lastUpdated": "2026-02-06T00:00:00Z",
   "recentListens": [
     {
-      "track": "La Guapa",
-      "artist": "B-Tribe",
-      "album": "Sensual Sensual",
-      "listenedAt": "2026-02-05T18:30:04Z",
-      "caaReleaseMbid": "ac791926-0b31-43e0-bba6-805eb7a05ebc",
-      "caaId": 12690583053,
-      "recordingMbid": "b8df962a-6127-4d6d-a157-b414e14cb0a1",
-      "artistMbids": [
-        "14e703ac-8364-41d5-b609-af2fd90343e9"
-      ]
-    },
-    {
-      "track": "Tribute to J.S. Bach",
-      "artist": "B-Tribe",
-      "album": "Sensual Sensual",
-      "listenedAt": "2026-02-05T18:26:35Z",
-      "caaReleaseMbid": "ac791926-0b31-43e0-bba6-805eb7a05ebc",
-      "caaId": 12690583053,
-      "recordingMbid": "41301395-6d54-43ea-bf32-9f09295dbee6",
-      "artistMbids": [
-        "14e703ac-8364-41d5-b609-af2fd90343e9"
-      ]
-    },
-    {
-      "track": "Zapateado",
-      "artist": "B-Tribe",
-      "album": "Sensual Sensual",
-      "listenedAt": "2026-02-05T18:23:15Z",
-      "caaReleaseMbid": "ac791926-0b31-43e0-bba6-805eb7a05ebc",
-      "caaId": 12690583053,
-      "recordingMbid": "584d20cf-50a9-4742-9f10-b1d00134598b",
-      "artistMbids": [
-        "14e703ac-8364-41d5-b609-af2fd90343e9"
-      ]
+      "track": "Airbag",
+      "artist": "Radiohead",
+      "album": "OK Computer",
+      "listenedAt": "2026-02-05T23:14:00Z",
+      "caaReleaseMbid": "a1289d02-1f5b-3b1b-854b-7bf3cd0e4a5c",
+      "caaId": 12345,
+      "recordingMbid": "b3015bab-1540-4d4b-9b1a-2e4a0773e491",
+      "artistMbids": ["a74b1b7f-71a5-4011-9441-d0b5e4122711"]
     }
   ],
   "recentListensStatus": "ok",
   "topArtists": [
     {
-      "name": "Christian Löffler",
-      "listenCount": 50,
-      "artistMbid": "a0d91c38-f5dc-487b-9b30-b67de1e7489e"
-    },
-    {
-      "name": "Adna",
-      "listenCount": 20,
-      "artistMbid": "69cc0c33-a4d9-4f48-bcd6-010eddee5fcb"
-    },
-    {
-      "name": "Carbon Based Lifeforms",
-      "listenCount": 11,
-      "artistMbid": "8229a8f1-b315-4fae-af57-b3eb71efdaf4"
+      "name": "Radiohead",
+      "listenCount": 142,
+      "artistMbid": "a74b1b7f-71a5-4011-9441-d0b5e4122711"
     }
   ],
   "topArtistsStatus": "ok",
   "topTracks": [
     {
-      "track": "Islands",
-      "artist": "Christian Löffler",
-      "listenCount": 5,
-      "recordingMbid": "8c53e45f-c0e9-4e66-887a-aa9f798a6018",
-      "caaReleaseMbid": "0269f70a-ebae-4c59-87bf-f41a9b1981a0",
-      "caaId": 44165292732
-    },
-    {
-      "track": "A Feeling",
-      "artist": "Christian Löffler feat. Adna",
-      "listenCount": 5,
-      "recordingMbid": "10b8b705-bfc6-4227-898d-300dc104bc6d",
-      "caaReleaseMbid": "0269f70a-ebae-4c59-87bf-f41a9b1981a0",
-      "caaId": 44165292732
-    },
-    {
-      "track": "Until We Meet Again",
-      "artist": "Christian Löffler",
-      "listenCount": 4,
-      "recordingMbid": "bc5eec36-ef74-4678-9ba5-e35a20436fd5",
-      "caaReleaseMbid": "0269f70a-ebae-4c59-87bf-f41a9b1981a0",
-      "caaId": 44165292732
+      "track": "Everything In Its Right Place",
+      "artist": "Radiohead",
+      "listenCount": 12,
+      "recordingMbid": "b3015bab-1540-4d4b-9b1a-2e4a0773e491",
+      "caaReleaseMbid": "a1289d02-1f5b-3b1b-854b-7bf3cd0e4a5c",
+      "caaId": 12345
     }
   ],
   "topTracksStatus": "ok",
   "topAlbums": [
     {
-      "album": "Until We Meet Again",
-      "artist": "Christian Löffler",
-      "listenCount": 50,
-      "caaReleaseMbid": "0269f70a-ebae-4c59-87bf-f41a9b1981a0",
-      "caaId": 44165292732
-    },
-    {
-      "album": "Interloper",
-      "artist": "Carbon Based Lifeforms",
-      "listenCount": 11,
-      "caaReleaseMbid": "4a4905ff-5b6d-4798-aace-89dd4bdd5972",
-      "caaId": 2572080981
-    },
-    {
-      "album": "The Fear Of Never Landing",
-      "artist": "Marconi Union",
-      "listenCount": 8,
-      "caaReleaseMbid": "d8dfe472-0fa7-4d7a-8aa0-622645876767",
-      "caaId": 42265782888
+      "album": "Kid A",
+      "artist": "Radiohead",
+      "listenCount": 38,
+      "caaReleaseMbid": "0b6b4ba0-d36f-3532-87a0-c428aaf6da63",
+      "caaId": 67890
     }
   ],
   "topAlbumsStatus": "ok",
   "stats": {
-    "totalListenCount": 220274,
+    "totalListenCount": 48319,
     "range": "this_month",
-    "artistCount": 25,
-    "albumCount": 23,
-    "trackCount": 73
+    "artistCount": 85,
+    "albumCount": 142,
+    "trackCount": 310
   }
 }
