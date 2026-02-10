@@ -1,5 +1,5 @@
 name: 'ListenBrainz JSON Bourne'
-description: 'GitHub Action that fetches listening data from ListenBrainz and writes it as JSON to your repository. No authentication required.'
+description: 'Fetch your ListenBrainz listening data and write it as JSON to your repo. No authentication needed.'
 branding:
   icon: 'music'
   color: 'purple'
