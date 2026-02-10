@@ -44,6 +44,7 @@
   "topAlbumsStatus": "ok",
   "stats": {
     "totalListenCount": 48319,
+    "rangeListenCount": 53,
     "range": "this_month",
     "artistCount": 85,
     "albumCount": 142,

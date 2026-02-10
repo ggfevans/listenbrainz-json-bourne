@@ -42,6 +42,7 @@ jq -n \
   --arg albumsStatus "$(cat "$LB_TMPDIR/releases-status.txt")" \
   --arg range "$LB_STATS_RANGE" \
   --argjson listenCount "$(cat "$LB_TMPDIR/listen-count.json" 2>/dev/null || echo null)" \
+  --argjson rangeListenCount "$(cat "$LB_TMPDIR/range-listen-count.json" 2>/dev/null || echo null)" \
   --argjson artistCount "$(cat "$LB_TMPDIR/artists-total.txt" 2>/dev/null || echo null)" \
   --argjson albumCount "$(cat "$LB_TMPDIR/releases-total.txt" 2>/dev/null || echo null)" \
   --argjson trackCount "$(cat "$LB_TMPDIR/recordings-total.txt" 2>/dev/null || echo null)" \
@@ -57,6 +58,7 @@ jq -n \
     topAlbumsStatus: $albumsStatus,
     stats: {
       totalListenCount: $listenCount,
+      rangeListenCount: $rangeListenCount,
       range: $range,
       artistCount: $artistCount,
       albumCount: $albumCount,

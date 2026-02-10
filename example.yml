@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: ggfevans/listenbrainz-json-bourne@v2.0.0
+      - uses: ggfevans/listenbrainz-json-bourne@v2.1.0
         id: listenbrainz
         with:
           username: your-listenbrainz-username

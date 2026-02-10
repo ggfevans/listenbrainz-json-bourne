@@ -6,8 +6,8 @@ listenbrainz-json-bourne is currently in active development. Security updates ar
 
 | Version | Supported |
 | ------- | --------- |
-| v2.0.0  | :white_check_mark:       |
-| <v2.0.0 | :x:       |
+| v2.1.0  | :white_check_mark:       |
+| <v2.1.0 | :x:       |
 
 Only the latest release is actively supported with security fixes.
 

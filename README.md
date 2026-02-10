@@ -34,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-      - uses: ggfevans/listenbrainz-json-bourne@v2.0.0
+      - uses: ggfevans/listenbrainz-json-bourne@v2.1.0
         with:
           username: your-listenbrainz-username
 ```
@@ -63,7 +63,7 @@ The action fetches data from ListenBrainz, writes a JSON file, and automatically
 Use outputs for conditional downstream steps:
 
 ```yaml
-- uses: ggfevans/listenbrainz-json-bourne@v2.0.0
+- uses: ggfevans/listenbrainz-json-bourne@v2.1.0
   id: listenbrainz
   with:
     username: your-listenbrainz-username
@@ -81,7 +81,7 @@ If you prefer to handle commits yourself (e.g. to combine with other file change
 steps:
   - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
-  - uses: ggfevans/listenbrainz-json-bourne@v2.0.0
+  - uses: ggfevans/listenbrainz-json-bourne@v2.1.0
     id: listenbrainz
     with:
       username: your-listenbrainz-username
@@ -104,7 +104,7 @@ The action writes a single JSON file with these fields:
 - `topArtists` -- array with `name`, `listenCount`, `artistMbid`
 - `topTracks` -- array with `track`, `artist`, `listenCount`, `recordingMbid`, `caaReleaseMbid`, `caaId`
 - `topAlbums` -- array with `album`, `artist`, `listenCount`, `caaReleaseMbid`, `caaId`
-- `stats` -- object with `totalListenCount`, `range`, `artistCount`, `albumCount`, `trackCount`
+- `stats` -- object with `totalListenCount`, `rangeListenCount`, `range`, `artistCount`, `albumCount`, `trackCount`
 
 Each section has a corresponding status field (`recentListensStatus`, `topArtistsStatus`, etc.) with one of three values:
 
@@ -170,6 +170,7 @@ https://coverartarchive.org/release/{caaReleaseMbid}/front-250
   "topAlbumsStatus": "ok",
   "stats": {
     "totalListenCount": 48319,
+    "rangeListenCount": 53,
     "range": "this_month",
     "artistCount": 85,
     "albumCount": 142,

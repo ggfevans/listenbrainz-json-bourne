@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # fetch-stats.sh
-# Fetches top artists, recordings, and releases from the ListenBrainz stats API.
+# Fetches top artists, recordings, releases, and listening activity from the ListenBrainz stats API.
 # This is NOT on the critical path — individual stat failures are non-fatal.
 #
 # Required env vars:
@@ -64,6 +64,11 @@ fetch_stat() {
        jq "[.payload.${array_key}[] | ${jq_filter}]" "$tmp_file" > "$LB_TMPDIR/${output_name}.json" 2>/dev/null; then
       echo "ok" > "$LB_TMPDIR/${output_name}-status.txt"
       jq ".payload.${total_key}" "$tmp_file" > "$LB_TMPDIR/${output_name}-total.txt" 2>/dev/null || echo "null" > "$LB_TMPDIR/${output_name}-total.txt"
+
+      # Capture the time window for this stats range (used to filter listening activity to the same range)
+      jq '.payload.from_ts // null' "$tmp_file" > "$LB_TMPDIR/stats-from-ts.json" 2>/dev/null || true
+      jq '.payload.to_ts // null' "$tmp_file" > "$LB_TMPDIR/stats-to-ts.json" 2>/dev/null || true
+
       local count
       count=$(jq length "$LB_TMPDIR/${output_name}.json")
       echo "Wrote ${count} ${output_name} to ${LB_TMPDIR}/${output_name}.json"
@@ -89,6 +94,50 @@ fetch_stat() {
 }
 
 # ---------------------------------------------------------------------------
+# fetch_listening_activity: Fetch listening activity and compute a range listen count
+# ---------------------------------------------------------------------------
+fetch_listening_activity() {
+  local url="${API_BASE}/${LB_USERNAME}/listening-activity?range=${LB_STATS_RANGE}"
+  local tmp_file="$LB_TMPDIR/listening-activity-response.tmp"
+
+  echo "Fetching listening activity for user: ${LB_USERNAME} (range: ${LB_STATS_RANGE})"
+
+  local http_status
+  http_status=$(fetch_url "$url" "$tmp_file")
+
+  if [ "$http_status" -eq 200 ]; then
+    local from_ts
+    local to_ts
+    from_ts="$(cat "$LB_TMPDIR/stats-from-ts.json" 2>/dev/null || echo null)"
+    to_ts="$(cat "$LB_TMPDIR/stats-to-ts.json" 2>/dev/null || echo null)"
+
+    if jq empty "$tmp_file" 2>/dev/null && \
+       jq --argjson fromTs "$from_ts" --argjson toTs "$to_ts" '
+          if ($fromTs == null or $toTs == null) then
+            [.payload.listening_activity[]?.listen_count] | add // 0
+          else
+            [.payload.listening_activity[]? | select(.from_ts >= $fromTs and .to_ts < $toTs) | .listen_count] | add // 0
+          end
+        ' "$tmp_file" > "$LB_TMPDIR/range-listen-count.json" 2>/dev/null; then
+      local count
+      count=$(cat "$LB_TMPDIR/range-listen-count.json")
+      echo "Range listen count: ${count}"
+    else
+      echo "null" > "$LB_TMPDIR/range-listen-count.json"
+      echo "Warning: Failed to parse listening-activity response as expected JSON" >&2
+    fi
+  elif [ "$http_status" -eq 204 ]; then
+    echo "null" > "$LB_TMPDIR/range-listen-count.json"
+    echo "No listening activity data available (HTTP 204)" >&2
+  else
+    echo "null" > "$LB_TMPDIR/range-listen-count.json"
+    echo "Warning: ListenBrainz API returned HTTP ${http_status} for listening-activity endpoint" >&2
+  fi
+
+  rm -f "$tmp_file"
+}
+
+# ---------------------------------------------------------------------------
 # Fetch each stat type
 # ---------------------------------------------------------------------------
 fetch_stat "artists" "artists" \
@@ -102,5 +151,7 @@ fetch_stat "recordings" "recordings" \
 fetch_stat "releases" "releases" \
   '{album: .release_name, artist: .artist_name, listenCount: .listen_count, caaReleaseMbid: (.caa_release_mbid // null), caaId: (.caa_id // null)}' \
   "releases" "total_release_count"
+
+fetch_listening_activity
 
 echo "fetch-stats.sh completed successfully"
