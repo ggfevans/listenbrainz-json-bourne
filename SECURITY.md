@@ -1,4 +1,4 @@
-| v2.1.0  | Yes       |
+| v2.1.1  | Yes       |
 | <v2.1.0 | :x:       |
 
 Only the latest release is actively supported with security fixes.
