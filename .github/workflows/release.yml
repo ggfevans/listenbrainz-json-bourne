@@ -14,24 +14,21 @@ defaults:
 jobs:
   update-refs:
     runs-on: ubuntu-latest
-    if: "!github.event.release.prerelease"
+    if: ${{ !github.event.release.prerelease }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: main
+          fetch-depth: 0
 
       - name: Update self-reference SHAs in docs
-        shell: bash
         run: |
-          set -euo pipefail
-
           TAG_NAME="${{ github.event.release.tag_name }}"
           RELEASE_SHA="${{ github.sha }}"
 
-          echo "Updating docs: self-references → ${RELEASE_SHA} # ${TAG_NAME}"
+          echo "Updating docs: self-references -> ${RELEASE_SHA} # ${TAG_NAME}"
 
-          sed -i "s|ggfevans/listenbrainz-json-bourne@[a-f0-9]\{40\} # [^ ]*|ggfevans/listenbrainz-json-bourne@${RELEASE_SHA} # ${TAG_NAME}|g" README.md
-          sed -i "s|ggfevans/listenbrainz-json-bourne@[a-f0-9]\{40\} # [^ ]*|ggfevans/listenbrainz-json-bourne@${RELEASE_SHA} # ${TAG_NAME}|g" example.yml
+          sed -i -E "s|uses: ggfevans/listenbrainz-json-bourne@[^[:space:]]+( # [^[:space:]]+)?|uses: ggfevans/listenbrainz-json-bourne@${RELEASE_SHA} # ${TAG_NAME}|g" README.md example.yml
 
           if ! grep -q "ggfevans/listenbrainz-json-bourne@${RELEASE_SHA}" README.md; then
             echo "::error::Failed to update self-reference in README.md"
@@ -44,43 +41,71 @@ jobs:
           fi
 
       - name: Update SECURITY.md supported versions
-        shell: bash
         run: |
-          set -euo pipefail
-
           TAG_NAME="${{ github.event.release.tag_name }}"
-          MAJOR=$(echo "${TAG_NAME}" | grep -oE '^v[0-9]+' || true)
+          VERSION="${TAG_NAME#v}"
 
-          if [ -z "${MAJOR}" ]; then
-            echo "Could not extract major version from ${TAG_NAME}, skipping"
+          if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Could not parse semver from ${TAG_NAME}, skipping SECURITY.md update"
             exit 0
           fi
 
-          # Update existing row for this major version, or add new one
-          if grep -qE "\| *${MAJOR}\." SECURITY.md; then
-            echo "Updating ${MAJOR} version → ${TAG_NAME} in SECURITY.md"
-            sed -i "0,/| *${MAJOR}\./c\\| ${TAG_NAME}  | Yes       |" SECURITY.md
-          else
-            echo "Adding ${TAG_NAME} to SECURITY.md supported versions"
-            sed -i "/^|[-| ]*$/a | ${TAG_NAME}  | Yes       |" SECURITY.md
-          fi
+          MAJOR_MINOR="${VERSION%.*}"
+          echo "Updating SECURITY.md to ${MAJOR_MINOR}.x"
 
-          if ! grep -Fq "${TAG_NAME}" SECURITY.md; then
-            echo "::error::Failed to update SECURITY.md with ${TAG_NAME}"
+          sed -i -E "s/\| [0-9]+\.[0-9]+\.x[[:space:]]+\| Yes[[:space:]]+\|/| ${MAJOR_MINOR}.x   | Yes       |/" SECURITY.md
+          sed -i -E "s/\| < [0-9]+\.[0-9]+[[:space:]]+\| No[[:space:]]+\|/| < ${MAJOR_MINOR}   | No        |/" SECURITY.md
+
+          if ! grep -Fq "| ${MAJOR_MINOR}.x" SECURITY.md; then
+            echo "::error::Failed to update SECURITY.md with ${MAJOR_MINOR}.x"
             exit 1
           fi
 
-          echo "SECURITY.md now lists ${TAG_NAME} as supported"
+          if ! grep -Fq "| < ${MAJOR_MINOR}" SECURITY.md; then
+            echo "::error::Failed to update SECURITY.md lower-bound row"
+            exit 1
+          fi
+
+          echo "SECURITY.md now lists ${MAJOR_MINOR}.x as supported"
+
+      - name: Update CHANGELOG.md
+        run: |
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          RELEASE_DATE=$(date -u +%Y-%m-%d)
+
+          # Find previous semver tag (excluding current)
+          PREV_TAG=$(git tag --sort=-v:refname | grep -E '^v[0-9]' | grep -v "^${TAG_NAME}$" | head -1)
+
+          if [ -n "${PREV_TAG}" ]; then
+            echo "Generating changelog: ${PREV_TAG}..${TAG_NAME}"
+            git log --format="- %s" "${PREV_TAG}..${TAG_NAME}" | grep -v "^- docs: update references" > /tmp/commits.txt || true
+          else
+            echo "No previous tag found, listing all commits"
+            git log --format="- %s" "${TAG_NAME}" | grep -v "^- docs: update references" > /tmp/commits.txt || true
+          fi
+
+          if [ -f CHANGELOG.md ]; then
+            {
+              head -1 CHANGELOG.md
+              printf '\n## %s (%s)\n\n' "${TAG_NAME}" "${RELEASE_DATE}"
+              cat /tmp/commits.txt
+              tail -n +2 CHANGELOG.md
+            } > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+          else
+            {
+              printf '# Changelog\n\n## %s (%s)\n\n' "${TAG_NAME}" "${RELEASE_DATE}"
+              cat /tmp/commits.txt
+            } > CHANGELOG.md
+          fi
+
+          echo "CHANGELOG.md updated with ${TAG_NAME} entry"
 
       - name: Commit and push
-        shell: bash
         run: |
-          set -euo pipefail
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add README.md SECURITY.md example.yml
+          git add README.md SECURITY.md example.yml CHANGELOG.md
 
           if git diff --cached --quiet; then
             echo "No changes to commit"
@@ -92,10 +117,7 @@ jobs:
           git push origin main
 
       - name: Update major version tag
-        shell: bash
         run: |
-          set -euo pipefail
-
           TAG_NAME="${{ github.event.release.tag_name }}"
           MAJOR=$(echo "${TAG_NAME}" | grep -oE '^v[0-9]+' || true)
 

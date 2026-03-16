@@ -1,5 +1,11 @@
-| v2.1.2  | Yes       |
-| <v2.1.0 | :x:       |
+# Security Policy
+
+## Supported Versions
+
+| Version | Supported |
+|---------|-----------|
+| 3.0.x   | Yes       |
+| < 3.0   | No        |
 
 Only the latest release is actively supported with security fixes.
 
