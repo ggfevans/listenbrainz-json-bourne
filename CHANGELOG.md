@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.1.0 (2026-03-16)
+
+- ci: align release workflow with trakt-json-bourne patterns (#27)
+
 ## [2.1.0] - 2026-02-10
 
 ### Added
